@@ -7,6 +7,7 @@ import (
 )
 
 func main() {
+	handlers.InitWorkers(10)
 
 	http.HandleFunc("/", handlers.HelloWorld)
 	http.HandleFunc("/payments", handlers.Payments)

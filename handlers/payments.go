@@ -4,11 +4,25 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"time"
 
 	"github.com/lPoltergeist/rinha-backend.git/models"
 )
+
+var client = &http.Client{
+	Timeout: time.Second * 5,
+}
+
+func worker(id int, jobs <-chan models.Payment) {
+	for payment := range jobs {
+		_, err := sendToPaymentProcessor(payment)
+		if nil != err {
+			fmt.Printf("Worker %d failed: %v\n", id, err)
+		}
+	}
+}
 
 func sendToPaymentProcessor(payment models.Payment) (string, error) {
 	jsonBody, err := json.Marshal(payment)
@@ -17,27 +31,35 @@ func sendToPaymentProcessor(payment models.Payment) (string, error) {
 		fmt.Println(err)
 	}
 
-	attempts := 0
-
 	urls := []string{
-		"http://192.168.1.109:8001/payments",
-		"http://192.168.1.109:8002/payments",
+		"http://localhost:8001/payments",
+		"http://localhost:8002/payments",
 	}
 
 	baseSleepTime := 100
 
-	for {
+	for attempts := 0; attempts <= 10; attempts++ {
 		url := urls[attempts%2]
-		sleepTime := baseSleepTime * (2 ^ attempts)
+		sleepTime := baseSleepTime * (1 << attempts)
 
-		res, err := http.Post(url, "application/json", bytes.NewBuffer(jsonBody))
+		req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonBody))
 		if err != nil {
 			fmt.Printf("Error: %v\n", err)
 			attempts++
 			continue
 		}
 
-		fmt.Printf("Response: %v\n", res.Status)
+		req.Header.Set("Content-Type", "application/json")
+
+		res, err := client.Do(req)
+		if err != nil {
+			fmt.Printf("Error: %v\n", err)
+			attempts++
+			continue
+		}
+
+		defer res.Body.Close()
+		io.Copy(io.Discard, res.Body)
 
 		if res.StatusCode == 200 {
 			fmt.Printf("Success Payment: %v\n", res.Status)
@@ -46,11 +68,12 @@ func sendToPaymentProcessor(payment models.Payment) (string, error) {
 
 		fmt.Printf("Attempts: %v\n", attempts)
 
-		attempts++
-
 		time.Sleep(time.Duration(sleepTime) * time.Millisecond)
 	}
+
+	return "", nil
 }
+
 func Payments(w http.ResponseWriter, r *http.Request) {
 	var payment models.Payment
 
@@ -63,7 +86,7 @@ func Payments(w http.ResponseWriter, r *http.Request) {
 		payment.RequestAt = time.Now().UTC().Format(time.RFC3339)
 	}
 
-	response, _ := sendToPaymentProcessor(payment)
+	JobChan <- payment
 
-	fmt.Fprintf(w, "Pagamentos: %v", response)
+	w.WriteHeader(http.StatusAccepted)
 }
