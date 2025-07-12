@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 
+	//"github.com/lPoltergeist/rinha-backend.git/helper"
 	"github.com/lPoltergeist/rinha-backend.git/models"
 )
 
@@ -31,21 +32,20 @@ func sendToPaymentProcessor(payment models.Payment) (string, error) {
 		fmt.Println(err)
 	}
 
-	urls := []string{
-		"http://localhost:8001/payments",
-		"http://localhost:8002/payments",
-	}
-
 	baseSleepTime := 100
 
-	for attempts := 0; attempts <= 10; attempts++ {
+	urls := []string{
+		"http://payment-processor-default:8080/payments",
+		"http://payment-processor-fallback:8080/payments",
+	}
+
+	for attempts := 0; attempts <= 100; attempts++ {
 		url := urls[attempts%2]
 		sleepTime := baseSleepTime * (1 << attempts)
 
 		req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonBody))
 		if err != nil {
 			fmt.Printf("Error: %v\n", err)
-			attempts++
 			continue
 		}
 
@@ -54,7 +54,6 @@ func sendToPaymentProcessor(payment models.Payment) (string, error) {
 		res, err := client.Do(req)
 		if err != nil {
 			fmt.Printf("Error: %v\n", err)
-			attempts++
 			continue
 		}
 
@@ -62,11 +61,8 @@ func sendToPaymentProcessor(payment models.Payment) (string, error) {
 		io.Copy(io.Discard, res.Body)
 
 		if res.StatusCode == 200 {
-			fmt.Printf("Success Payment: %v\n", res.Status)
 			return res.Status, nil
 		}
-
-		fmt.Printf("Attempts: %v\n", attempts)
 
 		time.Sleep(time.Duration(sleepTime) * time.Millisecond)
 	}

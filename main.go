@@ -4,10 +4,14 @@ import (
 	"net/http"
 
 	"github.com/lPoltergeist/rinha-backend.git/handlers"
+	"github.com/lPoltergeist/rinha-backend.git/helper"
 )
 
+var HealthCheck bool = true
+
 func main() {
-	handlers.InitWorkers(10)
+	helper.StartHealthCheck()
+	handlers.InitWorkers(30)
 
 	http.HandleFunc("/", handlers.HelloWorld)
 	http.HandleFunc("/payments", handlers.Payments)
