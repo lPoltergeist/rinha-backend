@@ -1,9 +1,21 @@
 
 services: 
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+    - "6379:6379"
+    networks:
+    - backend
+
   app1:
     build: 
       context: .
       dockerfile: Dockerfile
+    depends_on:
+      - redis
+    environment:
+     - REDIS_HOST:redis
     networks:
       - backend
       - payment-processor
@@ -26,6 +38,10 @@ services:
     networks:
       - backend
       - payment-processor
+    depends_on:
+      - redis
+    environment:
+     - REDIS_HOST:redis
     hostname: app2
     expose: 
       - "8080"

@@ -6,15 +6,14 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	//"github.com/lPoltergeist/rinha-backend.git/helper"
 	"github.com/lPoltergeist/rinha-backend.git/models"
 )
 
-var client = &http.Client{
-	Timeout: time.Second * 5,
-}
+var client = &http.Client{}
 
 func worker(id int, jobs <-chan models.Payment) {
 	for payment := range jobs {
@@ -26,6 +25,12 @@ func worker(id int, jobs <-chan models.Payment) {
 }
 
 func sendToPaymentProcessor(payment models.Payment) (string, error) {
+	defer func() {
+		if r := recover(); r != nil {
+			panic(r)
+		}
+	}()
+
 	jsonBody, err := json.Marshal(payment)
 
 	if err != nil {
@@ -39,7 +44,7 @@ func sendToPaymentProcessor(payment models.Payment) (string, error) {
 		"http://payment-processor-fallback:8080/payments",
 	}
 
-	for attempts := 0; attempts <= 100; attempts++ {
+	for attempts := 0; attempts <= 10; attempts++ {
 		url := urls[attempts%2]
 		sleepTime := baseSleepTime * (1 << attempts)
 
@@ -61,6 +66,13 @@ func sendToPaymentProcessor(payment models.Payment) (string, error) {
 		io.Copy(io.Discard, res.Body)
 
 		if res.StatusCode == 200 {
+			processor := false
+			if strings.Contains(url, "fallback") {
+				processor = true
+			}
+
+			Summary.Add(payment.Amount, processor)
+
 			return res.Status, nil
 		}
 

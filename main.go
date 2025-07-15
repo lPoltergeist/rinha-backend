@@ -3,14 +3,15 @@ package main
 import (
 	"net/http"
 
+	"github.com/lPoltergeist/rinha-backend.git/data"
 	"github.com/lPoltergeist/rinha-backend.git/handlers"
-	"github.com/lPoltergeist/rinha-backend.git/helper"
 )
 
 var HealthCheck bool = true
 
 func main() {
-	helper.StartHealthCheck()
+	data.InitRedis()
+
 	handlers.InitWorkers(30)
 
 	http.HandleFunc("/", handlers.HelloWorld)
