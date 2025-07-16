@@ -13,7 +13,9 @@ import (
 	"github.com/lPoltergeist/rinha-backend.git/models"
 )
 
-var client = &http.Client{}
+var client = &http.Client{
+	Timeout: 10 * time.Second,
+}
 
 func worker(id int, jobs <-chan models.Payment) {
 	for payment := range jobs {
@@ -44,7 +46,7 @@ func sendToPaymentProcessor(payment models.Payment) (string, error) {
 		"http://payment-processor-fallback:8080/payments",
 	}
 
-	for attempts := 0; attempts <= 10; attempts++ {
+	for attempts := 0; attempts <= 100; attempts++ {
 		url := urls[attempts%2]
 		sleepTime := baseSleepTime * (1 << attempts)
 

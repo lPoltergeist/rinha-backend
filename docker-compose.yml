@@ -1,12 +1,16 @@
-
 services: 
   redis:
     image: redis:7-alpine
     container_name: redis
     ports:
-    - "6379:6379"
+      - "6379:6379"
     networks:
-    - backend
+      - backend
+    deploy:
+      resources:
+        limits:
+          cpus: "0.05"
+          memory: 30m
 
   app1:
     build: 
@@ -15,7 +19,7 @@ services:
     depends_on:
       - redis
     environment:
-     - REDIS_HOST:redis
+      - REDIS_HOST=redis
     networks:
       - backend
       - payment-processor
@@ -27,21 +31,21 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.60"
-          memory: 150M
+          cpus: "0.26"
+          memory: 56m
 
   app2:
     build: 
       context: .
       dockerfile: Dockerfile
-    container_name: app2
-    networks:
-      - backend
-      - payment-processor
     depends_on:
       - redis
     environment:
-     - REDIS_HOST:redis
+      - REDIS_HOST=redis
+    networks:
+      - backend
+      - payment-processor
+    container_name: app2
     hostname: app2
     expose: 
       - "8080"
@@ -49,8 +53,74 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.60"
-          memory: 150m
+          cpus: "0.26"
+          memory: 56m
+
+  app3:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - redis
+    environment:
+      - REDIS_HOST=redis
+    networks:
+      - backend
+      - payment-processor
+    container_name: app3
+    hostname: app3
+    expose: 
+      - "8080"
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: "0.26"
+          memory: 56m
+
+  app4:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - redis
+    environment:
+      - REDIS_HOST=redis
+    networks:
+      - backend
+      - payment-processor
+    container_name: app4
+    hostname: app4
+    expose: 
+      - "8080"
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: "0.26"
+          memory: 56m
+
+  app5:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - redis
+    environment:
+      - REDIS_HOST=redis
+    networks:
+      - backend
+      - payment-processor
+    container_name: app5
+    hostname: app5
+    expose: 
+      - "8080"
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: "0.26"
+          memory: 56m
 
   nginx:
     image: nginx:alpine
@@ -64,11 +134,13 @@ services:
     depends_on:
       - app1
       - app2
+      - app3
+      - app4
     deploy:
       resources:
         limits:
-          cpus: "0.30"
-          memory: 50m
+          cpus: "0.15"
+          memory: 40m
 
 networks:
   backend:
