@@ -1,4 +1,4 @@
-package handlers
+package worker
 
 import "github.com/lPoltergeist/rinha-backend.git/models"
 

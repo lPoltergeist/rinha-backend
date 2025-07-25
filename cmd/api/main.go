@@ -12,8 +12,6 @@ var HealthCheck bool = true
 func main() {
 	data.InitRedis()
 
-	handlers.InitWorkers(190)
-
 	http.HandleFunc("/", handlers.HelloWorld)
 	http.HandleFunc("/payments", handlers.Payments)
 	http.HandleFunc("/payments-summary", handlers.GetSummary)

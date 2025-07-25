@@ -18,7 +18,6 @@ func StartHealthCheck() {
 		}()
 
 		for {
-			fmt.Println("✅ chamou VerifyHealth")
 			VerifyHealth()
 			time.Sleep(5 * time.Second)
 		}

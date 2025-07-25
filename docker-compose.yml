@@ -9,13 +9,13 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.05"
-          memory: 30m
+          cpus: "0.10"
+          memory: 40m
 
   app1:
     build: 
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.api
     depends_on:
       - redis
     environment:
@@ -31,13 +31,13 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.26"
-          memory: 56m
+          cpus: "0.20"
+          memory: 50m
 
   app2:
     build: 
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.api
     depends_on:
       - redis
     environment:
@@ -53,13 +53,13 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.26"
-          memory: 56m
+          cpus: "0.20"
+          memory: 50m
 
   app3:
     build: 
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.api
     depends_on:
       - redis
     environment:
@@ -75,13 +75,13 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.26"
-          memory: 56m
+          cpus: "0.20"
+          memory: 50m
 
   app4:
     build: 
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.api
     depends_on:
       - redis
     environment:
@@ -97,13 +97,13 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.26"
-          memory: 56m
+          cpus: "0.20"
+          memory: 50m
 
-  app5:
-    build: 
+  worker1:
+    build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.worker
     depends_on:
       - redis
     environment:
@@ -111,16 +111,54 @@ services:
     networks:
       - backend
       - payment-processor
-    container_name: app5
-    hostname: app5
-    expose: 
-      - "8080"
+    container_name: worker1
+    hostname: worker1
     restart: always
     deploy:
       resources:
         limits:
-          cpus: "0.26"
-          memory: 56m
+          cpus: "0.10"
+          memory: 40m
+
+  worker2:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    depends_on:
+      - redis
+    environment:
+      - REDIS_HOST=redis
+    networks:
+      - backend
+      - payment-processor
+    container_name: worker2
+    hostname: worker2
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: "0.10"
+          memory: 40m
+
+  worker3:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    depends_on:
+      - redis
+    environment:
+      - REDIS_HOST=redis
+    networks:
+      - backend
+      - payment-processor
+    container_name: worker3
+    hostname: worker3
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: "0.10"
+          memory: 40m
 
   nginx:
     image: nginx:alpine
@@ -139,8 +177,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.15"
-          memory: 40m
+          cpus: "0.6"
+          memory: 110m
 
 networks:
   backend:
