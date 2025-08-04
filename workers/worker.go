@@ -2,6 +2,7 @@ package worker
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -19,9 +20,13 @@ var client = &http.Client{
 
 func InitWorkers(n int) {
 	paymentChan := make(chan models.Payment, 2000)
+	ctx, cancel := context.WithCancel(context.Background())
 
+	defer cancel()
 	go func() {
-		ch := queue.Consumer()
+		defer close(paymentChan)
+
+		ch := queue.Consumer(ctx)
 
 		for payment := range ch {
 			paymentChan <- payment
@@ -33,6 +38,7 @@ func InitWorkers(n int) {
 			for payment := range paymentChan {
 				if err := Start(payment); err != nil {
 					fmt.Printf("Worker %d failed to process payment: %v\n", id, err)
+					continue
 				}
 
 			}

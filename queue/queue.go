@@ -1,6 +1,7 @@
 package queue
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -17,27 +18,45 @@ func Enqueued(payment models.Payment) error {
 	return data.Client.LPush(data.Context, "payment", json).Err()
 }
 
-func Consumer() <-chan models.Payment {
+func Consumer(ctx context.Context) <-chan models.Payment {
 	ch := make(chan models.Payment)
 
 	go func() {
-		for {
-			if data.Client == nil {
-				fmt.Printf("client is nil %v\n", data.Client)
-			}
+		defer close(ch)
 
-			res, err := data.Client.BRPop(data.Context, 0, "payment").Result()
-			if err != nil {
-				fmt.Printf("Error on consumer, fix it! %v", err)
-				continue
+		for {
+			select {
+			case <-ctx.Done():
+				fmt.Println("Consumer context done, exiting...")
+				return
+			default:
+				// Continue the normal processing
 			}
 
 			var payment models.Payment
 
-			if err := json.Unmarshal([]byte(res[1]), &payment); err == nil {
-				ch <- payment
-			} else {
-				fmt.Printf("Error on consumer, fix it! %v", err)
+			if data.Client == nil {
+				fmt.Printf("Client is nil")
+				continue
+			}
+
+			res, err := data.Client.BRPop(data.Context, 0, "payment").Result()
+
+			if err != nil {
+				fmt.Printf("Error on getting result: %v\n", err)
+				continue
+			}
+
+			if err := json.Unmarshal([]byte(res[1]), &payment); err != nil {
+				fmt.Printf("Error on unmarshalling json %v\n", err)
+				continue
+			}
+
+			select {
+			case <-ctx.Done():
+				fmt.Println("Consumer context done while sending payment, exiting...")
+				return
+			case ch <- payment:
 			}
 		}
 	}()
