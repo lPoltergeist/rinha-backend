@@ -1,8 +1,9 @@
 package models
 
 import (
-	"github.com/lPoltergeist/rinha-backend.git/data"
 	"github.com/shopspring/decimal"
+
+	"github.com/lPoltergeist/rinha-backend.git/data"
 )
 
 type SummaryData struct {
@@ -23,7 +24,6 @@ type ResponseSummary struct {
 }
 
 func (s *SummaryData) Add(amount float64, isFallback bool) error {
-
 	context := data.Context
 	client := data.Client
 

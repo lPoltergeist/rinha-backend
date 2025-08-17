@@ -2,7 +2,6 @@ package worker
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -20,13 +19,11 @@ var client = &http.Client{
 
 func InitWorkers(n int) {
 	paymentChan := make(chan models.Payment, 2000)
-	ctx, cancel := context.WithCancel(context.Background())
 
-	defer cancel()
 	go func() {
 		defer close(paymentChan)
 
-		ch := queue.Consumer(ctx)
+		ch := queue.Consumer()
 
 		for payment := range ch {
 			paymentChan <- payment
@@ -47,7 +44,7 @@ func InitWorkers(n int) {
 }
 
 func Start(payment models.Payment) error {
-	start := time.Now()
+
 	defer func() {
 		if r := recover(); r != nil {
 			panic(r)
@@ -94,9 +91,6 @@ func Start(payment models.Payment) error {
 				processor = true
 			}
 
-			elapse := time.Since(start)
-
-			fmt.Printf("delay til 200: %v\n", elapse)
 			Summary.Add(payment.Amount, processor)
 
 			return nil

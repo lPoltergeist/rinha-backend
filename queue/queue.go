@@ -1,7 +1,6 @@
 package queue
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 
@@ -18,20 +17,13 @@ func Enqueued(payment models.Payment) error {
 	return data.Client.LPush(data.Context, "payment", json).Err()
 }
 
-func Consumer(ctx context.Context) <-chan models.Payment {
+func Consumer() <-chan models.Payment {
 	ch := make(chan models.Payment)
 
 	go func() {
 		defer close(ch)
 
 		for {
-			select {
-			case <-ctx.Done():
-				fmt.Println("Consumer context done, exiting...")
-				return
-			default:
-				// Continue the normal processing
-			}
 
 			var payment models.Payment
 
@@ -52,12 +44,8 @@ func Consumer(ctx context.Context) <-chan models.Payment {
 				continue
 			}
 
-			select {
-			case <-ctx.Done():
-				fmt.Println("Consumer context done while sending payment, exiting...")
-				return
-			case ch <- payment:
-			}
+			ch <- payment
+
 		}
 	}()
 
