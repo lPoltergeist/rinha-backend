@@ -53,6 +53,8 @@ A solução foi desenhada para garantir escalabilidade, confiabilidade e consist
 - Cada worker segue o **Worker Pool Pattern**, processando mensagens em paralelo e distribuindo a carga entre suas threads.
 - Essa estrutura garante que os pagamentos sejam processados de forma eficiente e consistente, mesmo sob alta demanda.
 
+- ![Worker Pool Pattern](https://media2.dev.to/dynamic/image/width=800%2Cheight=%2Cfit=scale-down%2Cgravity=auto%2Cformat=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2Fnnhrwfv6nwd30xcxzov5.png)
+
 ### 4. Envio para Payment Processor
 - Os workers processam os dados da fila e realizam o envio para o **payment-processor**, mantendo o controle de falhas e retries conforme necessário.
 
