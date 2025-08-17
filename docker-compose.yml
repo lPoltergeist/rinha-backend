@@ -13,9 +13,7 @@ services:
           memory: 20m
 
   app1:
-    build: 
-      context: .
-      dockerfile: Dockerfile.api
+    image: lpoltergeist/gabriel-rinha-backend:api
     depends_on:
       - redis
     environment:
@@ -35,9 +33,7 @@ services:
           memory: 20m
 
   app2:
-    build: 
-      context: .
-      dockerfile: Dockerfile.api
+    image: lpoltergeist/gabriel-rinha-backend:api
     depends_on:
       - redis
     environment:
@@ -57,9 +53,7 @@ services:
           memory: 20m
 
   app3:
-    build: 
-      context: .
-      dockerfile: Dockerfile.api
+    image: lpoltergeist/gabriel-rinha-backend:api
     depends_on:
       - redis
     environment:
@@ -79,9 +73,7 @@ services:
           memory: 20m
 
   worker1:
-    build:
-      context: .
-      dockerfile: Dockerfile.worker
+    image: lpoltergeist/gabriel-rinha-backend:worker
     depends_on:
       - redis
     environment:
@@ -99,9 +91,7 @@ services:
           memory: 40m
 
   worker2:
-    build:
-      context: .
-      dockerfile: Dockerfile.worker
+    image: lpoltergeist/gabriel-rinha-backend:worker
     depends_on:
       - redis
     environment:
@@ -119,9 +109,7 @@ services:
           memory: 40m
 
   worker3:
-    build:
-      context: .
-      dockerfile: Dockerfile.worker
+    image: lpoltergeist/gabriel-rinha-backend:worker
     depends_on:
       - redis
     environment:
