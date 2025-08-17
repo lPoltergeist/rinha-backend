@@ -26,10 +26,13 @@ Go ainda é novidade pra mim, decidi começar a estudar a linguagem em junho de 
 git clone https://github.com/lPoltergeist/rinha-backend/tree/assincrono
 
 cd rinha-backend
+```
 
 2.Suba os containers com Docker Compose:
 
+```bash
 docker-compose up -d
+```
 
 
 ## Minha solução
